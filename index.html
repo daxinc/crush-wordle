@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Crush Wordle</title>
+  <script src="words.js"></script>
+  <style>
+    div#word-list li {
+      float: left;
+      width: 50px;
+      list-style: none;
+      padding: 4px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    td input {
+      height: 30px;
+      background-color: #f5f2eb;
+      font-size: 16px;
+    }
+
+    td.single input {
+      width: 30px;
+      text-align: center;
+    }
+
+    td.multiple input {
+      width: 300px;
+      text-align: left;
+    }
+  </style>
+  <script>
+    const fixedPosition = ["", "", "", "", ""];
+    const doesHave = new Set();
+    const doesNotHave = new Set();
+    let currentWords = [...WORDS];
+
+    function showWords() {
+      let html = "<ul>";
+      currentWords.forEach(w => { html += `<li>${w}</li>` });
+      html += "</ul>";
+      document.getElementById('word-list').innerHTML = html;
+    }
+
+    function oneLetter(box, i) {
+      if (box.value.length != 1) {
+        box.value = "";
+        return;
+      }
+
+      let c = box.value.toLowerCase();
+      if (c < 'a' || c > 'z') {
+        box.value = "";
+      } else {
+        box.value = c;
+        fixedPosition[i - 1] = c;
+
+        currentWords = filterByFixedPosition(currentWords, fixedPosition);
+        showWords();
+      }
+    }
+
+    function provideDoesHave(box) {
+      const currentSize = doesHave.size;
+      sanitizeInput(box, doesHave);
+
+      if (currentSize != doesHave.size) {
+        currentWords = filterByDoesHave(currentWords, doesHave);
+        showWords();
+      }
+    }
+
+    function provideDoesNotHave(box) {
+      const currentSize = doesNotHave.size;
+      sanitizeInput(box, doesNotHave)
+      if (currentSize != doesNotHave.size) {
+        currentWords = filterByDoesNotHave(currentWords, doesNotHave);
+        showWords();
+      }
+    }
+
+    function sanitizeInput(box, wordSet) {
+      const word = box.value.toLowerCase();
+      wordSet.clear();
+
+      let sanitized = "";
+      for (let c of word) {
+        if (c >= 'a' && c <= 'z' && !wordSet.has(c)) {
+          sanitized += c;
+          wordSet.add(c);
+        }
+      }
+
+      if (sanitized != box.value) {
+        box.value = sanitized;
+      }
+
+      return sanitized;
+    }
+
+    function filterByFixedPosition(words, fixedPosition) {
+      const indexAndLetters = [];
+      for (const i in fixedPosition) {
+        if (fixedPosition[i] != '') {
+          indexAndLetters.push([i, fixedPosition[i]]);
+        }
+      }
+
+      const filtered = [];
+      if (indexAndLetters.length === 0) {
+        return filtered;
+      }
+      for (const w of words) {
+        let match = true;
+        for (const [i, l] of indexAndLetters) {
+          if (w[i] != l) {
+            match = false;
+            break;
+          }
+        }
+
+        if (match) {
+          filtered.push(w);
+        }
+      }
+
+      return filtered;
+    }
+
+    function filterByDoesHave(words, doesHave) {
+      if (doesHave.size == 0) {
+        return words;
+      }
+
+      const filtered = [];
+
+      for (const w of words) {
+        let include = true;
+        for (const l of doesHave) {
+          if (!w.includes(l)) {
+            include = false;
+            break;
+          }
+        }
+
+        if (include) { filtered.push(w); }
+      }
+      return filtered;
+    }
+
+    function filterByDoesNotHave(words, doesNotHave) {
+      if (doesNotHave.size == 0) {
+        return words;
+      }
+
+      const filtered = [];
+
+      for (const w of words) {
+        let include = false;
+        for (const l of doesNotHave) {
+          if (w.includes(l)) {
+            include = true;
+            break;
+          }
+        }
+
+        if (!include) { filtered.push(w); }
+      }
+      return filtered;
+    }
+  </script>
+</head>
+
+<body>
+  <h1>Play <a href="https://www.powerlanguage.co.uk/wordle/" target="WORDLE">WORDLE</a> game as a software engineer.</h1>
+  <div>
+    <table>
+      <tr>
+        <td width="60">Known:</td>
+        <td class="single">
+          <input type="text" id="letter-1" maxlength="1" onkeyup="oneLetter(this,1)">
+          <input type="text" id="letter-2" maxlength="1" onkeyup="oneLetter(this,2)">
+          <input type="text" id="letter-3" maxlength="1" onkeyup="oneLetter(this,3)">
+          <input type="text" id="letter-4" maxlength="1" onkeyup="oneLetter(this,4)">
+          <input type="text" id="letter-5" maxlength="1" onkeyup="oneLetter(this,5)">
+        </td>
+      </tr>
+      <tr>
+        <td width="60">Does Have:</td>
+        <td class="multiple"><input type="text" id="does-have" maxlength="26" onkeyup="provideDoesHave(this)"
+            spellcheck="false"></td>
+      </tr>
+      <tr>
+        <td width="60">Does Not Have:</td>
+        <td class="multiple"><input type="text" id="does-not-have" maxlength="26" onkeyup="provideDoesNotHave(this)"
+            spellcheck="false"></td>
+      </tr>
+    </table>
+  </div>
+  <h2>Possible Words:</h2>
+  <div id='word-list'></div>
+
+  <script>
+    (function () {
+      // showWords(filterByFixedPosition(["word1", "word2", "lengt", "apple"], ["", "", "", "l", "e"]))
+      // const s = new Set(['x', 'e']);
+      // showWords(filterByDoesHave(["word1", "word2", "lengt", "apple"], s));
+      // showWords(filterByDoesNotHave(["word1", "word2", "lengt", "apple"], s));
+      showWords();
+    })();
+  </script>
+</body>
+
+</html>
