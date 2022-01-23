@@ -11,7 +11,8 @@
       width: 50px;
       list-style: none;
       padding: 4px;
-      font-family: 'Courier New', Courier, monospace;
+      font-family: monospace;
+      font-size: 16px;
     }
 
     td input {
@@ -46,6 +47,11 @@
     function oneLetter(box, i) {
       if (box.value.length != 1) {
         box.value = "";
+        if (fixedPosition[i - 1] != "") {
+          fixedPosition[i - 1] = "";
+          reevaluate();
+        }
+
         return;
       }
 
@@ -56,8 +62,7 @@
         box.value = c;
         fixedPosition[i - 1] = c;
 
-        currentWords = filterByFixedPosition(currentWords, fixedPosition);
-        showWords();
+        reevaluate();
       }
     }
 
@@ -66,8 +71,7 @@
       sanitizeInput(box, doesHave);
 
       if (currentSize != doesHave.size) {
-        currentWords = filterByDoesHave(currentWords, doesHave);
-        showWords();
+        reevaluate();
       }
     }
 
@@ -75,8 +79,7 @@
       const currentSize = doesNotHave.size;
       sanitizeInput(box, doesNotHave)
       if (currentSize != doesNotHave.size) {
-        currentWords = filterByDoesNotHave(currentWords, doesNotHave);
-        showWords();
+        reevaluate();
       }
     }
 
@@ -169,6 +172,15 @@
       }
       return filtered;
     }
+
+    function reevaluate(words) {
+      currentWords = [...WORDS];
+      currentWords = filterByFixedPosition(currentWords, fixedPosition);
+      currentWords = filterByDoesHave(currentWords, doesHave);
+      currentWords = filterByDoesNotHave(currentWords, doesNotHave);
+
+      showWords();
+    }
   </script>
 </head>
 
@@ -177,7 +189,7 @@
   <div>
     <table>
       <tr>
-        <td width="60">Known:</td>
+        <td width="120">Known:</td>
         <td class="single">
           <input type="text" id="letter-1" maxlength="1" onkeyup="oneLetter(this,1)">
           <input type="text" id="letter-2" maxlength="1" onkeyup="oneLetter(this,2)">
@@ -203,10 +215,6 @@
 
   <script>
     (function () {
-      // showWords(filterByFixedPosition(["word1", "word2", "lengt", "apple"], ["", "", "", "l", "e"]))
-      // const s = new Set(['x', 'e']);
-      // showWords(filterByDoesHave(["word1", "word2", "lengt", "apple"], s));
-      // showWords(filterByDoesNotHave(["word1", "word2", "lengt", "apple"], s));
       showWords();
     })();
   </script>
