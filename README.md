@@ -1,1 +1,1 @@
-Play [WORDLE](https://www.powerlanguage.co.uk/wordle/) game as a software engineer.
+Play [WORDLE](https://www.powerlanguage.co.uk/wordle/) game as a software engineer. Use [this](https://daxinc.github.io/crush-wordle/).
