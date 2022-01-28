@@ -112,8 +112,9 @@
 
       const filtered = [];
       if (indexAndLetters.length === 0) {
-        return filtered;
+        return words;
       }
+
       for (const w of words) {
         let match = true;
         for (const [i, l] of indexAndLetters) {
